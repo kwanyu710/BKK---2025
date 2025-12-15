@@ -2,480 +2,537 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12/23-28 曼谷之旅</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bangkok 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', '"Noto Sans TC"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
                     },
                     colors: {
-                        muji: {
-                            bg: '#f9f9f7',      /* 米白背景 */
-                            card: '#ffffff',    /* 純白卡片 */
-                            text: '#4a4a4a',    /* 深灰文字 */
-                            accent: '#d9730d',  /* 溫暖橘 (重點) */
-                            secondary: '#8c9b93', /* 鼠尾草綠 (次要) */
-                            danger: '#ef4444'   /* 紅色警示 */
-                        }
+                        'surface': '#FFFFFF',
+                        'bg-gray': '#F2F2F7',
+                        'ink': '#1C1C1E',
+                        'subtle': '#8E8E93',
+                        'blue-ios': '#007AFF',
+                    },
+                    boxShadow: {
+                        'soft': '0 8px 24px rgba(0,0,0,0.04)',
+                        'float': '0 12px 32px rgba(0,0,0,0.08)',
+                        'card': '0 2px 8px rgba(0,0,0,0.04)',
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } }
                     }
                 }
             }
         }
     </script>
-
+   
     <style>
-        body {
-            background-color: #f9f9f7;
-            color: #4a4a4a;
-            -webkit-tap-highlight-color: transparent;
-            padding-bottom: 90px; /* Space for bottom nav */
+        body { background-color: #F2F2F7; color: #1C1C1E; -webkit-tap-highlight-color: transparent; user-select: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Glassmorphism */
+        .glass { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-top: 1px solid rgba(255,255,255,0.4);
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .page-section { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .page-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Weather Scroll Snap */
+        .weather-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 10px;
+        }
+        .weather-item {
+            scroll-snap-align: start;
+        }
+
+        /* Timeline Line */
+        .timeline-line { position: absolute; left: 24px; top: 30px; bottom: -20px; width: 2px; background: #E5E5EA; z-index: 0; }
+        .timeline-item:last-child .timeline-line { display: none; }
+
+        /* Bottom Sheet */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+        .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 32px 32px 0 0; z-index: 60; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); max-height: 92vh; overflow-y: auto; padding-bottom: 40px; }
+        .bottom-sheet.open { transform: translateY(0); }
+
+        /* Interactions */
+        .tap-scale:active { transform: scale(0.96); transition: transform 0.1s; }
     </style>
 </head>
-<body class="antialiased select-none">
+<body class="pb-32 antialiased">
 
-    <header class="sticky top-0 z-50 bg-muji-bg/95 backdrop-blur-md px-6 py-4 border-b border-stone-200 shadow-sm">
-        <div class="flex justify-between items-center max-w-md mx-auto">
-            <div>
-                <h1 class="text-xl font-bold tracking-wide text-stone-800">Bangkok Trip</h1>
-                <p class="text-xs text-muji-secondary font-medium">12/23(二) - 12/28(日)</p>
-            </div>
-            <div class="text-right">
-                <span class="text-xs font-mono bg-stone-200 px-2 py-1 rounded text-stone-600" id="current-time">00:00</span>
-            </div>
+    <header class="relative h-[40vh] w-full overflow-hidden rounded-b-[40px] shadow-float bg-gray-900 z-0">
+        <img src="https://images.unsplash.com/photo-1582468574809-e35935f6532d?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover opacity-80">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80"></div>
+        
+        <div class="absolute top-0 w-full p-6 flex justify-between items-start z-20 text-white">
+            <div class="text-[10px] font-bold tracking-[0.2em] uppercase opacity-80">Bangkok Trip</div>
+            <button onclick="syncToCloud('upload')" class="w-8 h-8 rounded-full bg-white/20 backdrop-blur flex items-center justify-center tap-scale"><i class="fas fa-cloud-upload-alt text-xs"></i></button>
+        </div>
+
+        <div class="absolute bottom-8 left-8 right-8 text-white z-10">
+            <h1 class="text-4xl font-serif italic mb-2">Sawatdee,<br>Bangkok.</h1>
+            <p class="text-sm font-medium opacity-80 mt-2">12/23 — 12/28 (6 Days)</p>
         </div>
     </header>
 
-    <main class="p-4 max-w-md mx-auto">
-
-        <div id="page-plan" class="page-section active">
+    <main class="px-5 max-w-lg mx-auto min-h-[60vh] relative -mt-6 z-10">
+        
+        <div id="tab-home" class="section animate-slide-up">
             
-            <div class="bg-white p-5 rounded-2xl shadow-sm mb-6 border-l-4 border-muji-accent relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-muji-accent text-white text-[10px] px-2 py-1 rounded-bl-lg">去程</div>
-                <h3 class="text-sm font-bold text-stone-400 mb-2">Thai AirAsia FD235</h3>
-                <div class="flex justify-between items-center">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-stone-800">KHH</div>
-                        <div class="text-xs text-stone-500">高雄 18:00</div>
+            <div class="bg-white/90 backdrop-blur-md rounded-[28px] p-4 shadow-soft mb-6 overflow-hidden border border-white/50">
+                <div class="flex items-center justify-between mb-3 px-2">
+                    <span class="text-xs font-bold text-subtle uppercase"><i class="fas fa-location-arrow mr-1"></i> Bangkok</span>
+                    <span class="text-xs font-bold text-ink" id="header-temp">32°C</span>
+                </div>
+                <div class="weather-container hide-scrollbar gap-5 px-2" id="weather-scroll">
                     </div>
-                    <div class="text-stone-300 flex flex-col items-center">
-                        <i class="fas fa-plane text-muji-accent text-xl"></i>
-                        <span class="text-[10px] mt-1 text-stone-400">3h 30m</span>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-stone-800">DMK</div>
-                        <div class="text-xs text-stone-500">廊曼 21:30</div>
-                    </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white rounded-[28px] p-5 shadow-card relative overflow-hidden h-32 flex flex-col justify-between">
+                    <p class="text-[10px] tracking-widest text-subtle uppercase">Rate (TWD)</p>
+                    <p class="text-3xl font-serif font-bold text-ink" id="dash-rate">0.92</p>
+                    <p class="text-[10px] text-green-600 font-bold bg-green-50 w-max px-2 py-1 rounded-full">Live</p>
+                </div>
+                <div class="bg-ink text-white rounded-[28px] p-5 shadow-float h-32 flex flex-col justify-between tap-scale" onclick="switchTab('tab-account')">
+                    <p class="text-[10px] tracking-widest opacity-60 uppercase">Budget</p>
+                    <p class="text-2xl font-serif font-bold truncate" id="home-fund-display">฿0</p>
+                    <div class="self-end opacity-20"><i class="fas fa-wallet text-2xl"></i></div>
                 </div>
             </div>
 
-            <div class="mb-6 space-y-3">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-stone-100 relative">
-                    <span class="absolute top-3 right-3 text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">12/23 - 12/25</span>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-orange-100 w-10 h-10 rounded-full flex items-center justify-center text-orange-500 flex-shrink-0 mt-1">
-                            <strong class="text-lg">1</strong>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-stone-800 text-sm">B2 唐人街耀華力尊尚飯店</h4>
-                            <p class="text-xs text-stone-500 mt-1">B2 China Town Yaowarat Premier</p>
-                            <a href="https://www.google.com/maps/search/?api=1&query=B2+China+Town+Yaowarat+Premier+Hotel" target="_blank" class="inline-block mt-2 text-xs text-blue-500 hover:underline">
-                                <i class="fas fa-map-marker-alt mr-1"></i>導航 (9 Ratchawong Rd)
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-stone-100 relative">
-                    <span class="absolute top-3 right-3 text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">12/25 - 12/27</span>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-green-100 w-10 h-10 rounded-full flex items-center justify-center text-green-600 flex-shrink-0 mt-1">
-                            <strong class="text-lg">2</strong>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-stone-800 text-sm">曼谷茉莉花 59 號飯店</h4>
-                            <p class="text-xs text-stone-500 mt-1">Jasmine 59 Hotel (通羅 BTS)</p>
-                            <a href="https://www.google.com/maps/search/?api=1&query=Jasmine+59+Hotel" target="_blank" class="inline-block mt-2 text-xs text-blue-500 hover:underline">
-                                <i class="fas fa-map-marker-alt mr-1"></i>導航 (Sukhumvit 59)
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <div class="bg-white rounded-[28px] p-2 shadow-card flex items-center mb-6">
+                <div class="w-10 h-10 rounded-full bg-yellow-400 text-ink flex items-center justify-center font-bold flex-shrink-0"><i class="fas fa-language"></i></div>
+                <input type="text" id="thai-input" placeholder="翻譯成泰文..." class="flex-1 bg-transparent px-4 text-sm font-medium outline-none h-full">
+                <button onclick="translateThai()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-ink tap-scale"><i class="fas fa-arrow-right"></i></button>
             </div>
 
-            <div class="space-y-8 relative pl-4 border-l-2 border-stone-200 ml-2 pb-10">
-                
-                <div class="relative">
-                    <div class="absolute -left-[21px] top-0 bg-stone-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">DAY 1 (二)</div>
-                    <div class="pt-6 space-y-5">
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-stone-800 mb-1">抵達廊曼機場 (DMK)</span>
-                            <span class="text-xs text-stone-400">21:30 落地</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-stone-800 mb-1">包車接機 → 飯店</span>
-                            <span class="text-xs text-stone-500 bg-stone-100 p-2 rounded">
-                                <i class="fas fa-car mr-1"></i>不塞車約 30 分鐘<br>
-                                預計 22:30 抵達 B2 唐人街飯店
-                            </span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-stone-800 mb-1">唐人街吃宵夜 🍜</span>
-                            <div class="flex gap-2 mt-1">
-                                <a href="https://www.google.com/search?q=2023曼谷唐人街必吃美食懶人包+艾瑞絲" target="_blank" class="text-xs bg-white border border-stone-200 px-3 py-1.5 rounded-full text-stone-600 shadow-sm">
-                                    <i class="fas fa-search mr-1 text-muji-accent"></i>搜美食懶人包
-                                </a>
-                            </div>
-                        </div>
+            <button onclick="switchTab('tab-itinerary')" class="w-full bg-white p-6 rounded-[28px] shadow-card flex items-center justify-between tap-scale">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl"><i class="fas fa-map-marked-alt"></i></div>
+                    <div>
+                        <span class="block text-lg font-bold text-ink">我的行程</span>
+                        <span class="text-xs text-subtle">查看每日安排</span>
                     </div>
                 </div>
-
-                <div class="relative">
-                    <div class="absolute -left-[21px] top-0 bg-muji-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">DAY 2 (三)</div>
-                    <div class="pt-6 space-y-5">
-                        <div>
-                            <span class="text-sm font-bold text-stone-800 block">① 石龍軍路 (Charoen Krung)</span>
-                            <div class="flex gap-2 mt-2">
-                                <a href="https://www.google.com/search?q=石龍軍路+美食" target="_blank" class="text-[10px] bg-stone-100 px-2 py-1 rounded text-stone-500">美食攻略</a>
-                                <a href="https://www.google.com/search?q=石龍軍路+文青" target="_blank" class="text-[10px] bg-stone-100 px-2 py-1 rounded text-stone-500">文青散策</a>
-                            </div>
-                        </div>
-                        <div><span class="text-sm font-bold text-stone-800 block">② 臥佛寺 (Wat Pho)</span></div>
-                        <div><span class="text-sm font-bold text-stone-800 block">③ 鄭王廟 (Wat Arun)</span></div>
-                        <div><span class="text-sm font-bold text-stone-800 block">④ 王朗市場 (Wang Lang)</span></div>
-                        <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">
-                            <span class="text-sm font-bold text-muji-accent block">⑤ 郵輪晚餐 🚢</span>
-                            <span class="text-xs text-stone-500">River City Pier 出發</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="relative">
-                    <div class="absolute -left-[21px] top-0 bg-stone-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">DAY 3 (四)</div>
-                    <div class="pt-6 space-y-5">
-                        <div>
-                            <span class="text-sm font-bold text-stone-800 block">① 早餐兩選一</span>
-                            <ul class="text-xs text-stone-500 mt-1 ml-4 list-disc">
-                                <li>益生甫記茶餐廳 (唐人街近)</li>
-                                <li>安樂園 (On Lok Yun, 舊早餐)</li>
-                            </ul>
-                        </div>
-                        
-                        <div><span class="text-sm font-bold text-stone-800 block">② 嵩越路 (Song Wat Rd)</span></div>
-                        
-                        <div class="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                            <span class="text-xs font-bold text-orange-600 uppercase tracking-wide">Hotel Transfer</span>
-                            <p class="text-sm font-bold text-stone-800 mt-1">換飯店 ➜ Jasmine 59</p>
-                            <p class="text-xs text-stone-500">記得攜帶行李移動</p>
-                        </div>
-
-                        <div><span class="text-sm font-bold text-stone-800 block">④ 石龍軍路上半段 (ex: 32Bar)</span></div>
-                        <div><span class="text-sm font-bold text-stone-800 block">⑤ 唐人街 / ⑥ 考山路 (選)</span></div>
-                        <div>
-                            <span class="text-sm font-bold text-stone-800 block">⑦ 百貨公司巡禮</span>
-                            <span class="text-xs text-stone-400 block mt-1">Iconsiam / Central World / Dusit</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="relative">
-                    <div class="absolute -left-[21px] top-0 bg-muji-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">DAY 4 (五)</div>
-                    <div class="pt-6 space-y-5">
-                        <div class="bg-red-50 p-3 rounded-xl border border-red-100 shadow-sm flex items-center gap-3">
-                            <div class="text-center px-2 border-r border-red-200">
-                                <div class="text-lg font-bold text-red-600">08:00</div>
-                                <div class="text-[10px] text-red-400">AM</div>
-                            </div>
-                            <div>
-                                <div class="font-bold text-red-800 text-sm">飯店大廳集合 (包車)</div>
-                                <div class="text-xs text-red-500">Jasmine 59 Lobby</div>
-                            </div>
-                        </div>
-
-                        <div class="pl-2 border-l-2 border-dotted border-stone-300 space-y-4">
-                            <div>
-                                <span class="text-sm font-bold text-stone-800 block">📍 美功鐵道市場</span>
-                                <span class="text-xs text-stone-400">看火車經過市集</span>
-                            </div>
-                            <div>
-                                <span class="text-sm font-bold text-stone-800 block">📍 丹嫩莎水上市場</span>
-                                <span class="text-xs text-stone-400">搭手搖船體驗</span>
-                            </div>
-                            <div>
-                                <span class="text-sm font-bold text-stone-800 block">📍 樹中廟 (Wat Bang Kung)</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-stone-100 p-3 rounded-lg">
-                            <span class="text-sm font-bold text-stone-700 block">15:00 - 16:00 回到曼谷</span>
-                            <span class="text-xs text-stone-500">回飯店休息 / 按摩 / 逛百貨</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="relative pt-4 text-center pb-8">
-                     <div class="inline-block bg-stone-200 text-stone-500 text-[10px] px-3 py-1 rounded-full">後續行程自由安排</div>
-                </div>
-
-            </div>
+                <i class="fas fa-chevron-right text-gray-300"></i>
+            </button>
         </div>
 
-        <div id="page-guide" class="page-section">
-            <h2 class="text-xl font-bold mb-4">景點導覽</h2>
-            <div class="space-y-4">
-                <div class="bg-white p-4 rounded-xl shadow-sm">
-                    <h3 class="font-bold">鄭王廟 (Wat Arun)</h3>
-                    <p class="text-sm text-stone-500 mt-2">又稱黎明寺。是泰國境內規模最大的大乘舍利式塔，享有「泰國艾菲爾鐵塔」的美稱。<br>建議穿著亮色系或傳統泰服拍攝，背景是白色佛塔會非常漂亮。</p>
+        <div id="tab-itinerary" class="hidden">
+            <div class="sticky top-0 bg-[#F2F2F7]/95 backdrop-blur z-30 pt-2 pb-4">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h2 class="text-2xl font-serif font-bold">Itinerary</h2>
+                    <div class="flex gap-2">
+                        <button onclick="openSortModal()" class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-subtle tap-scale"><i class="fas fa-sort"></i></button>
+                        <button onclick="openEditModal()" class="w-8 h-8 rounded-full bg-ink text-white shadow-lg flex items-center justify-center tap-scale"><i class="fas fa-plus"></i></button>
+                    </div>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm">
-                    <h3 class="font-bold">美功鐵道市場</h3>
-                    <p class="text-sm text-stone-500 mt-2">世界奇觀之一。火車進站時間通常為：08:30, 11:10, 14:30, 17:40 (時間可能變動，包車司機會協助注意)。當火車來時，攤販會迅速收起遮陽棚。</p>
-                </div>
-                 <div class="bg-white p-4 rounded-xl shadow-sm">
-                    <h3 class="font-bold">丹嫩莎朵水上市場</h3>
-                    <p class="text-sm text-stone-500 mt-2">最知名的觀光水上市場，需搭乘手搖船體驗水上購物。記得貨比三家，享受殺價樂趣。</p>
-                </div>
+                <div class="flex overflow-x-auto hide-scrollbar gap-3 pb-2 pr-4" id="day-tabs">
+                    </div>
             </div>
+
+            <div id="itinerary-content" class="pb-24 space-y-0">
+                </div>
         </div>
 
-        <div id="page-wallet" class="page-section">
-            <div class="bg-stone-800 text-white p-5 rounded-2xl shadow-lg mb-6">
-                <div class="flex justify-between items-end mb-2">
-                    <label class="text-xs text-stone-400">匯率 (1 THB ≈ <input type="number" id="exchange-rate" value="0.92" class="w-12 bg-transparent border-b border-stone-500 text-center text-white focus:outline-none"> TWD)</label>
-                    <button onclick="clearCalc()" class="text-xs text-orange-400 border border-orange-400 px-2 py-1 rounded">AC</button>
-                </div>
-                <input type="text" id="calc-input" placeholder="0" class="w-full bg-transparent text-right text-3xl font-mono mb-2 focus:outline-none" readonly>
-                <div class="text-right border-t border-stone-600 pt-2">
-                    <div class="text-xl font-bold text-muji-accent" id="calc-result-thb">฿ 0</div>
-                    <div class="text-sm text-stone-400" id="calc-result-twd">NT$ 0</div>
-                </div>
-                <div class="grid grid-cols-4 gap-3 mt-4">
-                    <button onclick="appendCalc('7')" class="btn-calc">7</button>
-                    <button onclick="appendCalc('8')" class="btn-calc">8</button>
-                    <button onclick="appendCalc('9')" class="btn-calc">9</button>
-                    <button onclick="appendCalc('/')" class="btn-calc-op">÷</button>
-                    <button onclick="appendCalc('4')" class="btn-calc">4</button>
-                    <button onclick="appendCalc('5')" class="btn-calc">5</button>
-                    <button onclick="appendCalc('6')" class="btn-calc">6</button>
-                    <button onclick="appendCalc('*')" class="btn-calc-op">×</button>
-                    <button onclick="appendCalc('1')" class="btn-calc">1</button>
-                    <button onclick="appendCalc('2')" class="btn-calc">2</button>
-                    <button onclick="appendCalc('3')" class="btn-calc">3</button>
-                    <button onclick="appendCalc('-')" class="btn-calc-op">-</button>
-                    <button onclick="appendCalc('0')" class="btn-calc">0</button>
-                    <button onclick="appendCalc('.')" class="btn-calc">.</button>
-                    <button onclick="calculate()" class="btn-calc-eq">=</button>
-                    <button onclick="appendCalc('+')" class="btn-calc-op">+</button>
-                </div>
-                <button onclick="addToRecord()" class="w-full mt-4 bg-white/10 py-2 rounded-lg text-sm">加入記帳</button>
-            </div>
+        <div id="tab-account" class="hidden pb-24">
+             <h2 class="text-2xl font-serif font-bold mb-6 px-2">Wallet</h2>
+             
+             <div class="bg-white rounded-[32px] p-6 shadow-soft mb-6">
+                 <div class="text-center mb-6">
+                     <p class="text-xs text-subtle uppercase tracking-widest">Balance (THB)</p>
+                     <p class="text-4xl font-bold mt-2 text-ink" id="acc-fund-display">฿0</p>
+                 </div>
+                 
+                 <div class="space-y-4">
+                     <div class="bg-gray-50 rounded-2xl p-2 flex items-center">
+                         <span class="pl-4 font-bold text-gray-400">฿</span>
+                         <input type="number" id="amt-input" placeholder="0" class="flex-1 bg-transparent p-2 text-2xl font-bold outline-none">
+                     </div>
+                     <div class="flex gap-2 overflow-x-auto hide-scrollbar" id="cat-container"></div>
+                     <div class="flex gap-2 flex-wrap" id="payer-container"></div>
+                     <div class="flex gap-2">
+                         <input type="text" id="note-input" placeholder="備註..." class="flex-1 bg-gray-50 rounded-xl px-4 text-sm outline-none">
+                         <button onclick="submitTx()" class="w-12 h-12 bg-ink text-white rounded-xl shadow-lg tap-scale flex items-center justify-center"><i class="fas fa-check"></i></button>
+                     </div>
+                 </div>
+             </div>
+
+             <div id="tx-history" class="space-y-3 px-2"></div>
+        </div>
+
+        <div id="tab-checklist" class="hidden pb-24">
+            <h2 class="text-2xl font-serif font-bold mb-6 px-2">Checklist</h2>
+            <div id="checklist-container" class="space-y-4"></div>
             
-            <div class="bg-white rounded-2xl shadow-sm p-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-stone-700">消費紀錄</h3>
-                    <span class="font-bold text-muji-accent" id="total-expense">฿ 0</span>
+            <div class="mt-10 bg-white rounded-[28px] p-6 shadow-soft">
+                <h3 class="font-bold mb-4 text-sm"><i class="fas fa-cog mr-2"></i>Settings</h3>
+                <div class="flex gap-3 mb-4">
+                    <button onclick="syncToCloud('download')" class="flex-1 py-3 border border-gray-200 rounded-xl text-xs font-bold tap-scale">下載雲端備份</button>
+                    <button onclick="syncToCloud('upload')" class="flex-1 py-3 bg-ink text-white rounded-xl text-xs font-bold tap-scale">上傳本機資料</button>
                 </div>
-                <div id="expense-form" class="hidden bg-stone-50 p-3 rounded-lg mb-4">
-                    <input type="text" id="expense-name" placeholder="品項名稱" class="w-full p-2 mb-2 rounded border text-sm">
-                    <button onclick="saveExpense()" class="w-full bg-stone-800 text-white rounded p-2 text-sm">確認儲存</button>
-                </div>
-                <ul id="expense-list" class="space-y-3"></ul>
-            </div>
-        </div>
-
-        <div id="page-lists" class="page-section">
-            <h2 class="text-xl font-bold mb-4">行前清單</h2>
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="new-todo" placeholder="新增項目..." class="flex-1 p-3 rounded-xl shadow-sm bg-white">
-                <button onclick="addTodo()" class="bg-muji-accent text-white px-4 rounded-xl"><i class="fas fa-plus"></i></button>
-            </div>
-            <div id="todo-list" class="space-y-2"></div>
-        </div>
-
-        <div id="page-info" class="page-section">
-            <h2 class="text-xl font-bold mb-4">緊急資訊</h2>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <a href="tel:1155" class="bg-white p-4 rounded-xl shadow-sm text-center">
-                    <i class="fas fa-user-shield text-2xl text-red-500 mb-1"></i>
-                    <div class="font-bold text-sm">觀光警察 1155</div>
-                </a>
-                <a href="tel:1669" class="bg-white p-4 rounded-xl shadow-sm text-center">
-                    <i class="fas fa-ambulance text-2xl text-red-500 mb-1"></i>
-                    <div class="font-bold text-sm">救護車 1669</div>
-                </a>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
-                <h3 class="font-bold text-blue-800 mb-1">駐泰代表處</h3>
-                <a href="tel:+6621193555" class="text-lg font-mono text-blue-600 block mb-1">+66-2-119-3555</a>
-                <p class="text-xs text-stone-500">Empire Tower 20F, 1 South Sathorn Rd.</p>
+                <button onclick="hardReset()" class="w-full text-center text-[10px] text-red-300">重置所有資料</button>
             </div>
         </div>
 
     </main>
 
-    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-stone-200 pb-safe pt-2 px-4 z-50 h-[80px]">
-        <div class="flex justify-between items-center max-w-md mx-auto">
-            <button onclick="navTo('plan')" class="nav-btn active flex flex-col items-center w-1/5 text-stone-800">
-                <i class="fas fa-map-marked-alt text-xl mb-1"></i><span class="text-[10px]">行程</span>
-            </button>
-            <button onclick="navTo('guide')" class="nav-btn flex flex-col items-center w-1/5 text-stone-400">
-                <i class="fas fa-book-open text-xl mb-1"></i><span class="text-[10px]">導覽</span>
-            </button>
-            <button onclick="navTo('wallet')" class="nav-btn flex flex-col items-center w-1/5 text-stone-400">
-                <div class="bg-muji-accent text-white rounded-full w-12 h-12 flex items-center justify-center -mt-8 shadow-lg border-4 border-muji-bg">
-                    <i class="fas fa-wallet text-lg"></i>
-                </div>
-                <span class="text-[10px] mt-1 font-bold text-muji-accent">記帳</span>
-            </button>
-            <button onclick="navTo('lists')" class="nav-btn flex flex-col items-center w-1/5 text-stone-400">
-                <i class="fas fa-check-square text-xl mb-1"></i><span class="text-[10px]">清單</span>
-            </button>
-            <button onclick="navTo('info')" class="nav-btn flex flex-col items-center w-1/5 text-stone-400">
-                <i class="fas fa-info-circle text-xl mb-1"></i><span class="text-[10px]">資訊</span>
-            </button>
-        </div>
+    <nav class="fixed bottom-8 left-1/2 transform -translate-x-1/2 glass rounded-full px-6 py-4 shadow-float z-40 flex gap-8 items-center border border-white/50">
+        <button onclick="switchTab('tab-home')" class="nav-btn active text-subtle hover:text-ink transition tap-scale" data-target="tab-home"><i class="fas fa-home text-xl"></i></button>
+        <button onclick="switchTab('tab-itinerary')" class="nav-btn text-subtle hover:text-ink transition tap-scale" data-target="tab-itinerary"><i class="fas fa-map text-xl"></i></button>
+        <button onclick="switchTab('tab-account')" class="nav-btn text-subtle hover:text-ink transition tap-scale" data-target="tab-account"><i class="fas fa-wallet text-xl"></i></button>
+        <button onclick="switchTab('tab-checklist')" class="nav-btn text-subtle hover:text-ink transition tap-scale" data-target="tab-checklist"><i class="fas fa-list-check text-xl"></i></button>
     </nav>
 
-    <style>
-        .btn-calc { @apply p-3 bg-stone-700 rounded-lg shadow active:scale-95 transition; }
-        .btn-calc-op { @apply p-3 bg-stone-600 text-orange-300 rounded-lg shadow active:scale-95 transition; }
-        .btn-calc-eq { @apply p-3 bg-muji-accent text-white rounded-lg shadow active:scale-95 transition row-span-2; }
-    </style>
+    <div id="detail-modal-backdrop" class="modal-backdrop" onclick="closeModal('detail-modal')"></div>
+    <div id="detail-modal" class="bottom-sheet">
+        <div id="detail-content" class="p-6"></div>
+    </div>
 
-    <script>
-        // --- Navigation ---
-        function navTo(pageId) {
-            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('page-' + pageId).classList.add('active');
-            
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('text-stone-800');
-                el.classList.add('text-stone-400');
-            });
-            // Simple highlight logic
-            const map = { 'plan':0, 'guide':1, 'wallet':2, 'lists':3, 'info':4 };
-            document.querySelectorAll('.nav-btn')[map[pageId]].classList.remove('text-stone-400');
-            document.querySelectorAll('.nav-btn')[map[pageId]].classList.add('text-stone-800');
-            window.scrollTo(0, 0);
-        }
+    <div id="edit-modal-backdrop" class="modal-backdrop" onclick="closeModal('edit-modal')"></div>
+    <div id="edit-modal" class="bottom-sheet p-6">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+        <h3 class="font-bold text-xl mb-4" id="edit-title">編輯行程</h3>
+        <input type="hidden" id="edit-index">
+        <div class="space-y-4">
+            <div class="flex gap-3">
+                <input type="text" id="edit-time" class="w-24 bg-gray-50 rounded-2xl p-3 font-bold text-center outline-none" placeholder="時間">
+                <input type="text" id="edit-name" class="flex-1 bg-gray-50 rounded-2xl p-3 font-bold outline-none" placeholder="名稱">
+            </div>
+            <input type="text" id="edit-desc" class="w-full bg-gray-50 rounded-2xl p-3 text-sm outline-none" placeholder="簡短描述">
+            <input type="text" id="edit-local" class="w-full bg-blue-50 text-blue-800 rounded-2xl p-3 text-sm outline-none font-bold" placeholder="泰文名稱 (給司機看)">
+            <textarea id="edit-deep" class="w-full bg-gray-50 rounded-2xl p-3 text-sm h-24 outline-none" placeholder="深度導覽內容..."></textarea>
+            <div class="flex gap-2">
+                 <input type="text" id="edit-link" class="flex-1 bg-gray-50 rounded-2xl p-3 text-xs outline-none" placeholder="Google Maps 連結">
+                 <input type="text" id="edit-icon" class="w-1/3 bg-gray-50 rounded-2xl p-3 text-xs outline-none" placeholder="Icon (fa-star)">
+            </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="deleteSpot()" id="btn-delete" class="p-4 rounded-2xl bg-red-50 text-red-500 font-bold"><i class="fas fa-trash"></i></button>
+            <button onclick="saveSpot()" class="flex-1 bg-ink text-white font-bold rounded-2xl shadow-lg tap-scale">儲存</button>
+        </div>
+    </div>
+    
+    <div id="sort-modal-backdrop" class="modal-backdrop" onclick="closeModal('sort-modal')"></div>
+    <div id="sort-modal" class="bottom-sheet p-6 h-[80vh]">
+         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+         <h3 class="font-bold text-xl mb-4">調整順序</h3>
+         <div id="sort-list-container" class="space-y-2"></div>
+         <button onclick="confirmSort()" class="w-full bg-ink text-white font-bold py-4 rounded-2xl mt-6 shadow-lg">確認排序</button>
+    </div>
 
-        // --- Clock ---
-        setInterval(() => {
-            document.getElementById('current-time').innerText = new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:false});
-        }, 1000);
+    <div id="speak-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col items-center justify-center text-center p-6 transition-opacity duration-300" onclick="this.classList.add('hidden')">
+        <p class="text-gray-500 text-xs uppercase tracking-widest border border-gray-700 px-3 py-1 rounded-full mb-10">Show to Driver / Staff</p>
+        <h2 id="speak-cn" class="text-white text-2xl font-bold mb-2"></h2>
+        <h1 id="speak-th" class="text-white text-6xl font-bold leading-tight select-all"></h1>
+        <p class="text-white/30 text-xs mt-20 animate-pulse">Tap anywhere to close</p>
+    </div>
 
-        // --- Wallet ---
-        let calcExp = "";
-        let expenses = JSON.parse(localStorage.getItem('bkk_expenses') || "[]");
+<script>
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYeyHua8VRjHu3dHbP3glwWcFf5zClFG_drBD9gR_j9MZpcGf6uajQUzmOw_Au_o0o/exec';
 
-        function renderExpenses() {
-            const list = document.getElementById('expense-list');
-            const totalEl = document.getElementById('total-expense');
-            list.innerHTML = "";
-            let total = 0;
-            if(expenses.length === 0) list.innerHTML = '<li class="text-center text-stone-400 text-xs">尚無紀錄</li>';
-            
-            expenses.slice().reverse().forEach((item, idx) => {
-                total += parseFloat(item.amount);
-                const li = document.createElement('li');
-                li.className = "flex justify-between items-center bg-stone-50 p-2 rounded border border-stone-100";
-                li.innerHTML = `
-                    <div>
-                        <div class="font-bold text-sm text-stone-700">${item.name}</div>
-                        <div class="text-[10px] text-stone-400">${item.date}</div>
+    // --- RICH DATA WITH DEEP GUIDE (HARDCODED FOR SAFETY) ---
+    const DEFAULT_ITINERARY = [
+        { "day": 1, "date": "12/23 (Mon)", "spots": [ 
+            { "time": "18:00", "name": "出發", "desc": "高雄機場 -> 廊曼(DMK)", "icon": "fa-plane", "local": "สนามบินดอนเมือง", "deep_desc": "搭乘泰亞航 FD235。抵達後請注意：\n1. 廊曼機場通關較快。\n2. 叫 Grab 請選 1 樓外的接送點。\n3. 準備好護照與電子簽證截圖。" }, 
+            { "time": "22:30", "name": "Check-in", "desc": "B2 唐人街飯店", "icon": "fa-bed", "local": "B2 China Town Yaowarat Premier Hotel", "link": "http://maps.google.com/?q=B2+China+Town", "deep_desc": "位於唐人街心臟地帶，工業風設計。走路 3 分鐘到 MRT Wat Mangkon。櫃台通常有會講中文的服務人員。" },
+            { "time": "23:00", "name": "唐人街宵夜", "desc": "T&K 海鮮大排檔", "icon": "fa-utensils", "local": "ร้านอาหาร T&K Seafood (เสื้อเขียว)", "link": "http://maps.google.com/?q=T&K+Seafood", "deep_desc": "曼谷唐人街必吃！認明「綠色制服」員工。必點：\n1. 炭烤大頭蝦 (Grilled Prawns)\n2. 咖哩螃蟹\n3. 鮮蚵煎蛋\n環境較吵雜，是體驗曼谷街頭活力的好地方。" }
+        ] },
+        { "day": 2, "date": "12/24 (Tue)", "spots": [ 
+            { "time": "09:30", "name": "石龍軍路", "desc": "老城區文青早餐", "icon": "fa-coffee", "local": "ถนนเจริญกรุง", "deep_desc": "Charoen Krung 是曼谷第一條馬路。推薦：\n1. 仁和園涼茶 (百年老店)\n2. 王子戲院豬肉粥 (米其林必比登)\n這裡充滿新舊融合的氛圍，適合街拍。" },
+            { "time": "11:00", "name": "臥佛寺", "desc": "最大臥佛 & 按摩", "icon": "fa-gopuram", "local": "วัดโพธิ์ (Wat Pho)", "deep_desc": "擁有全泰國最大的臥佛像 (46米)。這裡也是泰式按摩的發源地，逛累了可以直接在寺內的按摩學校體驗最正宗的古法按摩。" },
+            { "time": "13:30", "name": "鄭王廟", "desc": "黎明寺拍美照", "icon": "fa-camera", "local": "วัดอรุณ (Wat Arun)", "deep_desc": "著名的白色佛塔，上面鑲滿了彩色碎瓷片。建議穿著顏色鮮豔的衣服來拍照，對比度會很美。注意服裝需有袖且過膝。" },
+            { "time": "19:00", "name": "昭披耶河遊船", "desc": "郵輪晚餐", "icon": "fa-ship", "local": "ล่องเรือแม่น้ำเจ้าพระยา", "deep_desc": "從 River City 碼頭出發。在船上欣賞夜間點燈的鄭王廟和大皇宮，景色比白天更壯觀。享受河風與 Buffet。" }
+        ] },
+        { "day": 3, "date": "12/25 (Wed)", "spots": [ 
+            { "time": "10:00", "name": "嵩越路", "desc": "Song Wat 文創街", "icon": "fa-palette", "local": "ถนนทรงวาด", "deep_desc": "近期曼谷最紅的文青街區！老倉庫改建的咖啡廳與藝廊。必去：FV Cafe (老房子改建)、牆上的大象塗鴉。" },
+            { "time": "14:00", "name": "通羅商圈", "desc": "下午茶 & 逛街", "icon": "fa-shopping-bag", "local": "ทองหล่อ (Thong Lor)", "deep_desc": "曼谷的「小日本」富人區。這裡有最高密度的網美咖啡廳 (如 Patom Organic Living) 和隱藏式酒吧 (Speakeasy Bar)。" },
+            { "time": "18:00", "name": "ICONSIAM", "desc": "室內水上市場", "icon": "fa-store", "local": "ไอคอนสยาม", "deep_desc": "曼谷最浮誇的百貨。必逛 G 樓的 SookSiam 室內水上市場，可以在冷氣房內吃到泰國各地的夜市小吃，價格比外面稍貴但衛生舒適。" }
+        ] },
+        { "day": 4, "date": "12/26 (Thu)", "spots": [ 
+            { "time": "08:00", "name": "包車出發", "desc": "前往水上市場", "icon": "fa-car", "local": "", "deep_desc": "路程較遠 (約 1.5-2 小時)，請大家準時集合。司機通常會走高速公路，過路費需額外支付給司機。" },
+            { "time": "10:00", "name": "美功鐵道", "desc": "看火車進站", "icon": "fa-train", "local": "ตลาดร่มหุบ", "deep_desc": "世界奇景！火車經過時攤販收棚子。最佳拍攝點是在鐵道轉彎處。注意火車經過時非常貼近，務必注意安全。" },
+            { "time": "12:00", "name": "丹嫩莎朵", "desc": "手搖船體驗", "icon": "fa-water", "local": "ตลาดน้ำดำเนินสะดวก", "deep_desc": "觀光客必去的水上市場。體驗手搖船塞船的樂趣。船上買東西記得殺價，通常從 3-4 折開始喊。" }
+        ] },
+        { "day": 5, "date": "12/27 (Fri)", "spots": [ 
+            { "time": "10:00", "name": "恰圖恰市集", "desc": "週末市集", "icon": "fa-gift", "local": "ตลาดนัดจตุจักร", "deep_desc": "世界最大週末市集！看到喜歡的就買，因為回頭很難再找到同一家店。推薦買：香氛、泰式文創T恤、木製餐具。" }
+        ] }
+    ];
+
+    let state = {
+        users: ["K","F","J","R","C","Fund"],
+        fundBalance: 0,
+        transactions: [],
+        checklist: [{"title":"Documents","items":[{"name":"Passport","checked":true}]}],
+        itinerary: DEFAULT_ITINERARY, 
+        currentDay: 0
+    };
+    
+    let sortable = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        renderWeather();
+        renderItinerary();
+        renderWallet();
+        renderChecklist();
+        autoSync();
+    });
+
+    // --- 1. WEATHER (iOS Style Horizontal) ---
+    function renderWeather() {
+        // Simulated Hourly Data
+        const hours = [
+            {t:'Now', i:'fa-sun', T:'32°'}, {t:'1PM', i:'fa-cloud-sun', T:'33°'}, 
+            {t:'2PM', i:'fa-cloud', T:'33°'}, {t:'3PM', i:'fa-cloud-rain', T:'30°'},
+            {t:'4PM', i:'fa-bolt', T:'29°'}, {t:'5PM', i:'fa-cloud', T:'28°'},
+            {t:'6PM', i:'fa-moon', T:'28°'}, {t:'7PM', i:'fa-moon', T:'27°'}
+        ];
+        document.getElementById('weather-scroll').innerHTML = hours.map(h => `
+            <div class="weather-item flex flex-col items-center justify-between min-w-[50px] h-[70px]">
+                <span class="text-[10px] font-bold text-subtle">${h.t}</span>
+                <i class="fas ${h.i} text-lg text-ink my-1"></i>
+                <span class="text-sm font-bold text-ink">${h.T}</span>
+            </div>
+        `).join('');
+    }
+
+    // --- 2. ITINERARY (Card + Bottom Sheet) ---
+    function renderItinerary() {
+        // Date Tabs (Scrollable)
+        document.getElementById('day-tabs').innerHTML = state.itinerary.map((d, i) => `
+            <button onclick="setDay(${i})" class="flex-shrink-0 px-4 py-2 rounded-full border transition-all ${state.currentDay===i ? 'bg-ink text-white border-ink shadow-md' : 'bg-white text-subtle border-transparent'}">
+                <span class="text-xs font-bold whitespace-nowrap">${d.date}</span>
+            </button>
+        `).join('');
+
+        const d = state.itinerary[state.currentDay];
+        const container = document.getElementById('itinerary-content');
+        
+        container.innerHTML = d.spots.map((s, idx) => `
+            <div class="timeline-item relative pl-10 pb-6 last:pb-0 group" onclick="openDetail(${idx})">
+                <div class="timeline-line"></div>
+                <div class="absolute left-[20px] top-[24px] w-2.5 h-2.5 rounded-full bg-ink border-2 border-white shadow z-10"></div>
+                
+                <span class="text-[10px] font-bold text-subtle absolute left-10 top-0">${s.time}</span>
+                
+                <div class="bg-white rounded-[24px] p-5 shadow-card mt-5 relative overflow-hidden tap-scale transition-all active:shadow-none">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-lg text-ink">${s.name}</h3>
+                        <i class="fas ${s.icon} text-gray-200 text-xl"></i>
                     </div>
-                    <div class="text-right">
-                        <div class="font-bold text-stone-800">฿ ${item.amount}</div>
-                        <button onclick="delExpense(${expenses.length - 1 - idx})" class="text-[10px] text-red-300">刪除</button>
-                    </div>
-                `;
-                list.appendChild(li);
-            });
-            totalEl.innerText = `฿ ${total}`;
-        }
+                    <p class="text-xs text-subtle line-clamp-1">${s.desc}</p>
+                    ${s.local ? '<div class="absolute bottom-2 right-4 w-2 h-2 rounded-full bg-blue-500"></div>' : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+    function setDay(i) { state.currentDay = i; renderItinerary(); }
 
-        function appendCalc(v) { calcExp += v; document.getElementById('calc-input').value = calcExp; }
-        function clearCalc() { calcExp = ""; document.getElementById('calc-input').value = ""; document.getElementById('calc-result-thb').innerText="฿ 0"; document.getElementById('calc-result-twd').innerText="NT$ 0"; }
-        function calculate() {
-            try {
-                const res = eval(calcExp); // Simple eval for calculator
-                document.getElementById('calc-result-thb').innerText = `฿ ${res}`;
-                document.getElementById('calc-result-twd').innerText = `NT$ ${Math.round(res * document.getElementById('exchange-rate').value)}`;
-                document.getElementById('calc-input').setAttribute('data-res', res);
-            } catch(e) {}
+    // --- 3. BOTTOM SHEET DETAIL LOGIC ---
+    function openDetail(idx) {
+        const s = state.itinerary[state.currentDay].spots[idx];
+        const modal = document.getElementById('detail-modal');
+        const content = document.getElementById('detail-content');
+        
+        // Populate Content
+        content.innerHTML = `
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+            
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-lg mb-2 inline-block">${s.time}</span>
+                    <h2 class="text-3xl font-serif font-bold text-ink">${s.name}</h2>
+                    <p class="text-sm text-subtle">${s.desc}</p>
+                </div>
+                <button onclick="openEditModal(${idx})" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-subtle"><i class="fas fa-pen text-xs"></i></button>
+            </div>
+
+            <div class="bg-bg-gray rounded-2xl p-4 mb-4 border border-gray-200">
+                <p class="text-[10px] font-bold text-subtle uppercase tracking-widest mb-2"><i class="fas fa-book-open mr-1"></i> 深度導覽</p>
+                <p class="text-sm text-ink leading-relaxed whitespace-pre-line">${s.deep_desc || '尚無詳細介紹。'}</p>
+            </div>
+
+            <div class="space-y-3">
+                ${s.local ? `
+                <button onclick="showSpeak('${s.name}', '${s.local}')" class="w-full py-4 bg-ink text-white rounded-2xl shadow-lg font-bold flex items-center justify-center gap-2 tap-scale">
+                    <i class="fas fa-expand"></i> 🗣️ 給司機/店員看 (大字卡)
+                </button>` : ''}
+                
+                ${s.link ? `
+                <a href="${s.link}" target="_blank" class="w-full py-3 bg-white border border-gray-200 text-ink rounded-2xl font-bold flex items-center justify-center gap-2 tap-scale">
+                    <i class="fas fa-map-location-dot text-blue-500"></i> Google Maps 導航
+                </a>` : ''}
+            </div>
+        `;
+        
+        document.getElementById('detail-modal-backdrop').classList.add('open');
+        modal.classList.add('open');
+    }
+
+    // --- 4. POINT & SPEAK ---
+    function showSpeak(cn, th) {
+        document.getElementById('speak-cn').innerText = cn;
+        document.getElementById('speak-th').innerText = th;
+        document.getElementById('speak-modal').classList.remove('hidden');
+    }
+
+    // --- 5. EDIT/ADD LOGIC ---
+    function openEditModal(idx = -1) {
+        closeModal('detail-modal'); // Close detail first
+        const isNew = idx === -1;
+        const s = isNew ? {} : state.itinerary[state.currentDay].spots[idx];
+        
+        document.getElementById('edit-title').innerText = isNew ? '新增行程' : '編輯行程';
+        document.getElementById('edit-index').value = idx;
+        document.getElementById('btn-delete').style.display = isNew ? 'none' : 'block';
+        
+        ['time','name','desc','local','deep_desc','link','icon'].forEach(k => {
+            const id = 'edit-' + k.replace('deep_desc','deep');
+            document.getElementById(id).value = s[k] || '';
+        });
+        
+        document.getElementById('edit-modal-backdrop').classList.add('open');
+        document.getElementById('edit-modal').classList.add('open');
+    }
+
+    function saveSpot() {
+        const idx = document.getElementById('edit-index').value;
+        const s = {
+            time: document.getElementById('edit-time').value,
+            name: document.getElementById('edit-name').value,
+            desc: document.getElementById('edit-desc').value,
+            local: document.getElementById('edit-local').value,
+            deep_desc: document.getElementById('edit-deep').value,
+            link: document.getElementById('edit-link').value,
+            icon: document.getElementById('edit-icon').value || 'fa-map-marker-alt'
+        };
+        
+        if(idx == -1) state.itinerary[state.currentDay].spots.push(s);
+        else state.itinerary[state.currentDay].spots[idx] = s;
+        
+        saveData(); renderItinerary(); closeModal('edit-modal');
+    }
+
+    function deleteSpot() {
+        const idx = document.getElementById('edit-index').value;
+        if(confirm("確定刪除?")) {
+            state.itinerary[state.currentDay].spots.splice(idx,1);
+            saveData(); renderItinerary(); closeModal('edit-modal');
         }
-        function addToRecord() {
-            const val = document.getElementById('calc-input').getAttribute('data-res');
-            if(!val) return alert('請先計算金額');
-            document.getElementById('expense-form').classList.remove('hidden');
-            document.getElementById('expense-form').setAttribute('data-amt', val);
-        }
-        function saveExpense() {
-            const amt = document.getElementById('expense-form').getAttribute('data-amt');
-            const name = document.getElementById('expense-name').value || "消費";
-            expenses.push({ name, amount: amt, date: new Date().toLocaleDateString() });
-            localStorage.setItem('bkk_expenses', JSON.stringify(expenses));
-            document.getElementById('expense-form').classList.add('hidden');
-            document.getElementById('expense-name').value = "";
-            clearCalc();
-            renderExpenses();
-        }
-        function delExpense(idx) {
-            if(confirm("刪除此筆?")) {
-                expenses.splice(idx, 1);
-                localStorage.setItem('bkk_expenses', JSON.stringify(expenses));
-                renderExpenses();
+    }
+    
+    // Sort Logic
+    function openSortModal() {
+        const spots = state.itinerary[state.currentDay].spots;
+        if(!spots || spots.length === 0) return alert("無行程");
+        document.getElementById('sort-list-container').innerHTML = spots.map((s, i) => `
+            <div class="bg-gray-50 p-3 rounded-xl flex items-center justify-between" data-id="${i}">
+                <span class="font-bold text-sm text-gray-700 truncate"><i class="fas ${s.icon} mr-2 text-gray-400"></i>${s.name}</span>
+                <i class="fas fa-bars text-gray-300"></i>
+            </div>`).join('');
+        document.getElementById('sort-modal-backdrop').classList.add('open');
+        document.getElementById('sort-modal').classList.add('open');
+        if(sortable) sortable.destroy();
+        sortable = new Sortable(document.getElementById('sort-list-container'), { animation: 150 });
+    }
+    function confirmSort() {
+        const newOrder = sortable.toArray();
+        const currentSpots = state.itinerary[state.currentDay].spots;
+        state.itinerary[state.currentDay].spots = newOrder.map(i => currentSpots[parseInt(i)]);
+        saveData(); renderItinerary(); closeModal('sort-modal');
+    }
+
+
+    // --- UTILS ---
+    function switchTab(id) {
+        document.querySelectorAll('.section').forEach(e => e.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById(id).classList.add('animate-slide-up');
+        document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('text-ink'); b.classList.add('text-subtle'); });
+        document.querySelector(`[data-target="${id}"]`).classList.replace('text-subtle','text-ink');
+    }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+        document.getElementById(id+'-backdrop').classList.remove('open');
+    }
+
+    // --- WALLET & CHECKLIST (Standard Logic) ---
+    let acc = { cat: 'Food', payer: 'Fund', split: 'shared' };
+    function renderWallet() {
+        document.getElementById('cat-container').innerHTML = ['Food','Ride','Shop','Stay'].map(c => 
+            `<button onclick="acc.cat='${c}'; renderWalletUI()" class="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center text-subtle ${acc.cat===c?'bg-ink text-white':''}"><i class="fas fa-${{'Food':'utensils','Ride':'car','Shop':'bag-shopping','Stay':'bed'}[c]}"></i></button>`
+        ).join('');
+        document.getElementById('payer-container').innerHTML = state.users.map(u => 
+            `<button onclick="acc.payer='${u}'; renderWalletUI()" class="px-3 py-1 rounded-full text-xs font-bold border ${acc.payer===u?'bg-ink text-white':'bg-white text-subtle'}">${u}</button>`
+        ).join('');
+        document.getElementById('acc-fund-display').innerText = '฿' + state.fundBalance.toLocaleString();
+        document.getElementById('home-fund-display').innerText = '฿' + state.fundBalance.toLocaleString();
+        document.getElementById('tx-history').innerHTML = state.transactions.slice(0,8).map(t => 
+            `<div class="flex justify-between py-3 border-b border-gray-50"><span class="text-sm font-bold">${t.note||t.cat}</span><span class="font-bold">${t.amt}</span></div>`
+        ).join('');
+    }
+    function renderWalletUI() { renderWallet(); } // Refresh UI
+    function submitTx() {
+        const amt = parseInt(document.getElementById('amt-input').value);
+        const note = document.getElementById('note-input').value;
+        if(!amt) return;
+        if(acc.split === 'deposit') state.fundBalance += amt; else if (acc.payer === 'Fund') state.fundBalance -= amt;
+        state.transactions.unshift({ date: new Date().toLocaleDateString(), amt, note, cat: acc.cat, payer: acc.payer, split: acc.split });
+        saveData(); renderWallet(); document.getElementById('amt-input').value = '';
+    }
+
+    function renderChecklist() {
+        document.getElementById('checklist-container').innerHTML = state.checklist.map((g,gi) => `
+            <div class="bg-white rounded-[28px] p-5 shadow-soft">
+                <h3 class="font-bold text-sm uppercase tracking-widest text-subtle mb-3">${g.title}</h3>
+                ${g.items.map((i,ii) => `<label class="flex items-center gap-3 py-2"><input type="checkbox" ${i.checked?'checked':''} onchange="state.checklist[${gi}].items[${ii}].checked=this.checked; saveData()" class="accent-ink w-4 h-4"><span class="${i.checked?'line-through text-gray-300':''}">${i.name}</span></label>`).join('')}
+            </div>
+        `).join('');
+    }
+
+    // --- DATA ---
+    function saveData() { localStorage.setItem('bkk_2025_final', JSON.stringify(state)); }
+    function loadData() { 
+        const d = localStorage.getItem('bkk_2025_final'); 
+        if(d) {
+            // Merge loaded data but KEEP default rich itinerary if user has default structure
+            const loaded = JSON.parse(d);
+            // Simple check: if loaded itinerary has 0 spots or generic data, we prefer default
+            if(loaded.itinerary && loaded.itinerary.length > 0) {
+                 state = {...state, ...loaded};
             }
         }
-
-        // --- Lists ---
-        let todos = JSON.parse(localStorage.getItem('bkk_todos') || '[{"text":"護照","done":false},{"text":"eSIM / 網卡","done":false},{"text":"旅遊保險","done":false}]');
-        function renderTodos() {
-            const list = document.getElementById('todo-list');
-            list.innerHTML = "";
-            todos.forEach((t, i) => {
-                const div = document.createElement('div');
-                div.className = "flex items-center bg-white p-3 rounded-xl shadow-sm";
-                div.innerHTML = `
-                    <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})" class="w-5 h-5 accent-orange-500">
-                    <span class="ml-3 flex-1 text-sm ${t.done?'line-through text-stone-300':'text-stone-700'}">${t.text}</span>
-                    <button onclick="removeTodo(${i})" class="text-stone-300"><i class="fas fa-times"></i></button>
-                `;
-                list.appendChild(div);
-            });
-        }
-        function addTodo() {
-            const val = document.getElementById('new-todo').value;
-            if(!val) return;
-            todos.push({text: val, done: false});
-            localStorage.setItem('bkk_todos', JSON.stringify(todos));
-            document.getElementById('new-todo').value = "";
-            renderTodos();
-        }
-        function toggleTodo(i) { todos[i].done = !todos[i].done; localStorage.setItem('bkk_todos', JSON.stringify(todos)); renderTodos(); }
-        function removeTodo(i) { todos.splice(i, 1); localStorage.setItem('bkk_todos', JSON.stringify(todos)); renderTodos(); }
-
-        // Init
-        window.onload = function() {
-            renderExpenses();
-            renderTodos();
-            navTo('plan');
-        }
-    </script>
+    }
+    async function syncToCloud(a) { 
+        if(a==='upload') { await fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(state)}); alert('Backup sent!'); }
+        else { const r=await fetch(GOOGLE_SCRIPT_URL+'?t='+Date.now()); const d=await r.json(); if(d && confirm('Overwrite?')){state={...state,...d}; saveData(); location.reload();} }
+    }
+    function translateThai() { window.open('https://translate.google.com/?sl=zh-TW&tl=th&text='+document.getElementById('thai-input').value); }
+    function hardReset() { if(confirm("Reset All?")) { localStorage.removeItem('bkk_2025_final'); location.reload(); } }
+</script>
 </body>
 </html>
