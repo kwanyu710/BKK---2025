@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>2025 曼谷聖誕跨年 - 泰廢了</title>
+    <title>2025 曼谷聖誕跨年 (V28)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -21,6 +21,7 @@
                         'jp-green': '#8DA399',
                         'jp-red': '#D67D7D',
                         'mag-paper': '#FFFBF0',
+                        'wallet-blue': '#3B82F6',
                     },
                     fontFamily: {
                         sans: ['"Zen Kaku Gothic New"', '"Noto Sans TC"', 'sans-serif'],
@@ -51,7 +52,7 @@
 
         /* Card Interactions */
         .spot-card { transition: transform 0.1s, box-shadow 0.1s; cursor: pointer; }
-        .spot-card:active { transform: scale(0.97); }
+        .spot-card:active { transform: scale(0.98); }
 
         /* Bottom Sheet (Slide Up Modal) */
         .bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; align-items: flex-end; justify-content: center; }
@@ -77,6 +78,13 @@
         .nav-btn.active i { transform: scale(1.1); transition: 0.2s; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9500; display: none; align-items: center; justify-content: center; }
         .modal-overlay.open { display: flex; }
+        
+        /* Direct Action Buttons on Card */
+        .card-action-btn { 
+            font-size: 11px; padding: 6px 12px; border-radius: 8px; font-weight: bold; 
+            display: flex; align-items: center; gap: 4px; transition: background 0.2s;
+        }
+        .card-action-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -91,7 +99,7 @@
     <header class="sticky top-0 z-50 bg-[#F9F8F4]/95 backdrop-blur-sm px-5 py-4 flex justify-between items-end border-b border-gray-100">
         <div>
             <p class="text-[10px] text-gray-400 tracking-widest mb-1">DEC 23 - DEC 28</p>
-            <h1 class="text-xl font-bold text-jp-text tracking-wide leading-tight">2025 曼谷聖誕跨年<br><span class="text-jp-accent text-lg">- 泰廢了 -</span></h1>
+            <h1 class="text-xl font-bold text-jp-text tracking-wide leading-tight">2025 曼谷聖誕跨年<br><span class="text-jp-accent text-lg">- 泰廢了 (V28) -</span></h1>
         </div>
         <div class="text-center">
              <span class="block text-[10px] text-gray-400">曼谷</span>
@@ -113,15 +121,28 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl p-4 shadow-soft mb-6">
-            <h3 class="text-sm font-bold text-jp-text mb-2">求生泰語翻譯</h3>
-            <div class="flex gap-2">
-                <input type="text" id="thai-input" placeholder="輸入中文 (例: 不要香菜)" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-jp-accent">
-                <button onclick="translateThai()" class="w-10 h-10 bg-jp-green/10 rounded-lg flex items-center justify-center text-jp-green active:scale-95 transition">
-                    <i class="fas fa-volume-up"></i>
-                </button>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-[24px] p-5 shadow-soft flex flex-col justify-center h-32 relative overflow-hidden">
+                <p class="text-xs text-gray-400 font-bold mb-1">匯率 (TWD/THB)</p>
+                <p class="text-[40px] font-bold text-jp-text tracking-tighter leading-none mt-1" id="home-rate-display">0.99</p>
             </div>
-            <p class="text-[10px] text-gray-400 mt-2 text-right">點擊喇叭開啟 Google 翻譯發音</p>
+            <div class="bg-white rounded-[24px] p-5 shadow-soft flex flex-col justify-center h-32 cursor-pointer active:scale-95 transition" onclick="switchTab('tab-account')">
+                <p class="text-xs text-gray-400 font-bold mb-1">公費錢包</p>
+                <p class="text-[40px] font-bold text-wallet-blue tracking-tighter leading-none mt-1 truncate" id="home-fund-display">฿0</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[24px] p-4 shadow-soft mb-6 flex items-center gap-3">
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-500 flex-shrink-0">
+                <i class="fas fa-language text-xl"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-[10px] text-gray-400 font-bold mb-1">求生泰語 (輸入中文)</p>
+                <input type="text" id="thai-input" placeholder="不要香菜..." class="w-full text-lg font-bold text-gray-700 placeholder-gray-200 outline-none">
+            </div>
+            <button onclick="translateThai()" class="text-purple-500 font-bold text-sm px-2">
+                翻譯
+            </button>
         </div>
 
         <h3 class="text-sm font-bold text-gray-400 mb-3 ml-1 uppercase tracking-wider">Quick Access</h3>
@@ -138,11 +159,10 @@
             <button onclick="switchTab('tab-account')" class="bg-white p-4 rounded-xl shadow-soft text-left flex flex-col justify-between h-24 border border-jp-accent/20 active:scale-95 transition">
                 <div class="flex justify-between">
                     <i class="fas fa-calculator text-jp-red text-xl"></i>
-                    <span class="text-[10px] bg-gray-100 px-1 rounded text-gray-500" id="dash-fund">公費: $0</span>
                 </div>
                 <div>
-                    <span class="text-sm font-bold block text-jp-text">智慧記帳</span>
-                    <span class="text-xs text-gray-400">點擊記帳</span>
+                    <span class="text-sm font-bold block text-jp-text">記帳</span>
+                    <span class="text-xs text-gray-400">快速紀錄</span>
                 </div>
             </button>
 
@@ -247,10 +267,10 @@
                      <i class="fas fa-cloud-sun text-yellow-400 text-xl"></i>
                      <div>
                          <span class="block text-sm font-bold text-jp-text">曼谷天氣預報</span>
-                         <span class="text-xs text-gray-400">OpenWeatherMap</span>
+                         <span class="text-xs text-gray-400">Google Weather</span>
                      </div>
                  </div>
-                 <a href="https://weather.com/zh-TW/weather/today/l/THBM0024:1:TH" target="_blank" class="px-3 py-1 rounded-full bg-gray-100 text-xs text-gray-600">查看</a>
+                 <a href="https://www.google.com/search?q=曼谷天氣" target="_blank" class="px-3 py-1 rounded-full bg-gray-100 text-xs text-gray-600">查看</a>
              </div>
              <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                  <h4 class="text-xs text-gray-400 mb-3 font-bold tracking-wider">緊急聯絡 EMERGENCY</h4>
@@ -388,7 +408,7 @@
 <script>
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYeyHua8VRjHu3dHbP3glwWcFf5zClFG_drBD9gR_j9MZpcGf6uajQUzmOw_Au_o0o/exec';
 
-    // --- FULL DATASET WITH YOUR NEW INPUTS (V22) ---
+    // --- V28: ABSOLUTE FINAL ITINERARY (Day 2/3 Fixed) ---
     const DEFAULT_ITINERARY = [
         { "day": 1, "date": "12/23 (二)", "desc": "抵達曼谷", "spots": [ 
             { "time": "18:00", "name": "高雄出發", "thai_name": "สนามบิน", "desc": "FD235 ✈️ (21:30 抵達廊曼)", "icon": "fa-plane", "color": "text-blue-500", "deep_desc": "廊曼機場 (DMK) 是曼谷的舊機場，規模較小但通關通常比素萬那普 (BKK) 快。出關後請留意「Taxi」指標，或使用 Grab App 叫車 (建議選擇 1 樓外的接送點)。" }, 
@@ -396,19 +416,20 @@
             { "time": "Late", "name": "唐人街宵夜", "thai_name": "เยาวราช", "desc": "Check-in 後覓食", "icon": "fa-utensils", "color": "text-orange-500", "keyword": "曼谷唐人街美食", "deep_desc": "曼谷唐人街 (耀華力路) 是全球最古老的唐人街之一。這裡晚上的霓虹燈招牌有種 80 年代香港電影的氛圍。必吃推薦：T&K 海鮮（綠色制服）、粿汁（Kway Chap）。" }, 
             { "time": "Sleep", "name": "B2 唐人街飯店", "thai_name": "โรงแรมบีทู", "desc": "入住休息", "link": "https://maps.app.goo.gl/ZjNM4vwDCNQdAq637?g_st=ipc", "keyword": "", "icon": "fa-bed", "color": "text-gray-500", "deep_desc": "B2 是泰國知名的平價連鎖飯店，主打工業風設計。唐人街分店位置極佳，走路就能到 MRT Wat Mangkon 站，且周邊充滿老曼谷的生活氣息。" } 
         ] },
-        { "day": 2, "date": "12/24 (三)", "desc": "舊城古蹟巡禮", "spots": [ 
-            { "time": "09:30", "name": "石龍軍路", "thai_name": "เจริญกรุง", "desc": "文青散策 / 美食", "link": "", "keyword": "石龍軍路美食", "icon": "fa-walking", "color": "text-gray-500", "deep_desc": "Charoen Krung 是曼谷第一條鋪設的道路，充滿歷史感。這裡融合了老式廣東茶室、百年教堂與新興的藝廊。推薦嘗試「仁和園」涼茶，或是米其林推薦的豬腳飯。" }, 
-            { "time": "11:00", "name": "臥佛寺", "thai_name": "วัดโพธิ์", "desc": "必拍古蹟", "link": "", "keyword": "臥佛寺", "icon": "fa-gopuram", "color": "text-gray-500", "deep_desc": "這裡擁有泰國最大的臥佛像 (長46公尺)，腳底刻有 108 個佛陀祥瑞圖案。此外，臥佛寺也是泰式按摩的發源地，如果走累了，可以在寺內的按摩學校體驗最正宗的泰式古法按摩。" }, 
-            { "time": "13:30", "name": "鄭王廟", "thai_name": "วัดอรุณ", "desc": "拍照參觀", "link": "https://maps.app.goo.gl/4t2JkPEY1yKKBtoq5?g_st=ipc", "keyword": "鄭王廟", "icon": "fa-store", "color": "text-gray-500", "deep_desc": "又稱黎明寺 (Wat Arun)。不同於泰國常見的金碧輝煌，這裡以白色為底，鑲嵌著無數中國運來的彩色碎瓷片。這座塔象徵著佛教宇宙觀中的須彌山，日落時分的剪影被譽為曼谷最美景色之一。" }, 
-            { "time": "14:30", "name": "王朗市場", "thai_name": "ตลาดวังหลัง", "desc": "在地小吃", "link": "https://maps.app.goo.gl/Q43nUqg7KE9dRj8Z9?g_st=ipc", "keyword": "王朗市場", "icon": "fa-map-marker-alt", "color": "text-gray-500", "deep_desc": "Wang Lang Market 是當地大學生和護士最愛的市場，觀光客較少，價格非常親民！必買：炸麵包 (Wang Lang Bakery)、泰式甜點、烤肉串。這裡也是搭船過河到大皇宮的轉運點。" }, 
-            { "time": "19:00", "name": "昭披耶河晚餐", "thai_name": "ล่องเรือแม่น้ำเจ้าพระยา", "desc": "River City 郵輪", "icon": "fa-ship", "color": "text-blue-600", "keyword": "昭披耶河遊船推薦", "deep_desc": "在船上用餐的亮點不是食物，而是兩岸的夜景。你會看到夜晚點燈的鄭王廟和大皇宮，與白天截然不同。建議選擇露天座位，享受河風吹拂的浪漫氛圍。" } 
+        { "day": 2, "date": "12/24 (三)", "desc": "平安夜特企", "spots": [ 
+            { "time": "09:00", "name": "臥佛寺", "thai_name": "วัดโพธิ์", "desc": "必拍古蹟", "link": "https://www.google.com/maps/place/Bangkok5", "keyword": "臥佛寺", "icon": "fa-gopuram", "color": "text-gray-500", "deep_desc": "擁有全泰國最大的臥佛像 (長46公尺)。這裡也是泰式按摩的發源地，逛累了可以直接在寺內的按摩學校體驗最正宗的古法按摩。" }, 
+            { "time": "11:00", "name": "鄭王廟", "thai_name": "วัดอรุณ", "desc": "拍照參觀", "link": "https://maps.app.goo.gl/4t2JkPEY1yKKBtoq5?g_st=ipc", "keyword": "鄭王廟", "icon": "fa-store", "color": "text-gray-500", "deep_desc": "又稱黎明寺 (Wat Arun)。不同於泰國常見的金碧輝煌，這裡以白色為底，鑲嵌著無數中國運來的彩色碎瓷片。日落時分的剪影被譽為曼谷最美景色之一。" }, 
+            { "time": "13:00", "name": "王朗市場", "thai_name": "ตลาดวังหลัง", "desc": "在地小吃", "link": "https://maps.app.goo.gl/Q43nUqg7KE9dRj8Z9?g_st=ipc", "keyword": "王朗市場", "icon": "fa-map-marker-alt", "color": "text-gray-500", "deep_desc": "Wang Lang Market 是當地大學生和護士最愛的市場，觀光客較少，價格非常親民！必買：炸麵包 (Wang Lang Bakery)、泰式甜點、烤肉串。" },
+            { "time": "16:00", "name": "Iconsiam", "thai_name": "ไอคอนสยาม", "desc": "甜點 & 拍照", "icon": "fa-camera", "color": "text-blue-500", "link": "https://www.google.com/maps/place/Bangkok6", "deep_desc": "曼谷地標級百貨。推薦到 G 樓 SookSiam 拍室內水上市場，或者去頂樓觀景台看河景。必吃甜點：After You 蜜糖吐司、Karun 泰式奶茶。" },
+            { "time": "19:00", "name": "考山路晚餐", "thai_name": "ถนนข้าวสาร", "desc": "平安夜狂歡", "icon": "fa-beer", "color": "text-red-500", "link": "https://www.google.com/maps/place/Bangkok7", "deep_desc": "Khao San Road 是背包客的天堂。平安夜這裡會非常熱鬧，充滿歐美遊客。隨便找一家露天酒吧 (如 The One) 吃飯喝酒，感受曼谷的節日氣氛。記得試試路邊的 Pad Thai！" },
+            { "time": "21:30", "name": "回飯店", "desc": "休息", "icon": "fa-home", "color": "text-gray-400" }
         ] },
-        { "day": 3, "date": "12/25 (四)", "desc": "通羅時尚漫遊", "spots": [ 
-            { "time": "09:00", "name": "傳統早餐", "thai_name": "ออน ล๊อก หยุ่น", "desc": "益生甫記 or 安樂園", "link": "https://maps.app.goo.gl/JmfSPvJffbXh7CeS7?g_st=ipc", "keyword": "曼谷 安樂園", "icon": "fa-coffee", "color": "text-gray-500", "deep_desc": "安樂園 (On Lok Yun) 開業超過 80 年，是曼谷經典的「洋食」早餐店。這裡的咖椰吐司 (Kaya Toast) 與泰式奶茶是絕配，彷彿時光倒流至二戰後的曼谷。" }, 
-            { "time": "10:30", "name": "嵩越路", "thai_name": "ถนนทรงวาด", "desc": "文青街拍", "link": "https://maps.app.goo.gl/eM2DRoHF2P22VCAv8?g_st=ipc", "keyword": "嵩越路", "icon": "fa-camera", "color": "text-gray-500", "deep_desc": "Song Wat Road 是近期曼谷最紅的文青街區。早期是香料與大米的貿易集散地，現在老倉庫改建成了藝廊與質感咖啡廳 (如 FV Cafe)。牆上的大象塗鴉是必拍地標。" }, 
-            { "time": "12:00", "name": "換飯店", "desc": "前往 Jasmine 59 Hotel (通羅)", "link": "https://maps.app.goo.gl/DmVbJdwrbkwQ7p8K6?g_st=ipc", "keyword": "", "icon": "fa-suitcase", "color": "text-gray-500", "deep_desc": "移動日請善用 Grab SUV 或 Van 車型，因為我們行李不少。通羅區交通較壅塞，要有塞車的心理準備。" }, 
-            { "time": "14:00", "name": "通羅商圈", "thai_name": "ทองหล่อ", "desc": "咖啡廳 / 逛街", "icon": "fa-glass-cheers", "color": "text-purple-500", "deep_desc": "Thong Lor (通羅) 被稱為曼谷的「小日本」或富人區。這裡聚集了最高密度的精品咖啡廳、日式居酒屋與隱藏版酒吧 (Speakeasy Bar)。" }, 
-            { "time": "Eve", "name": "Iconsiam / Central World", "thai_name": "ไอคอนสยาม", "desc": "逛百貨", "icon": "fa-shopping-bag", "color": "text-jp-text", "deep_desc": "Iconsiam 最具特色的就是一樓的「室內水上市場」(SookSiam)，完美復刻了泰國傳統水上人家的風情，且冷氣開放，逛起來非常舒適。若去 Central World，別忘了拜一下門口的愛神與象神。" } 
+        { "day": 3, "date": "12/25 (四)", "desc": "聖誕文青 & 遊船", "spots": [ 
+            { "time": "09:30", "name": "文青散策", "thai_name": "เจริญกรุง & ตลาดน้อย", "desc": "嵩越路/石龍軍/Talat Noi", "link": "https://www.google.com/maps/place/Bangkok8", "icon": "fa-palette", "color": "text-gray-500", "deep_desc": "這是一條絕佳的散步路線：從嵩越路 (Song Wat) 的老建築咖啡廳開始，走到石龍軍路 (Charoen Krung) 吃百年老店，最後鑽進 Talat Noi 的巷弄拍街頭塗鴉與廢棄古董車。" }, 
+            { "time": "12:30", "name": "午餐自理", "desc": "沿途探店", "icon": "fa-utensils", "color": "text-gray-500", "deep_desc": "這一帶有很多隱藏版美食，如：Ped Tun Chao Tha (燉鴨)、Jok Prince (王子戲院豬肉粥)。看到想吃的就走進去吧！" }, 
+            { "time": "16:00", "name": "前往 Asiatique", "thai_name": "เอเชียทีค (Asiatique)", "desc": "碼頭 7號倉庫登船", "link": "https://www.google.com/maps/place/Bangkok9", "icon": "fa-ship", "color": "text-blue-600", "highlight": true, "deep_desc": "請務必準時！昭披耶公主號日落遊船 (Sunset Cruise) 登船點在 Asiatique 碼頭 (7號倉庫)。16:45 開始登船，17:00 準時出發。建議提早到 Asiatique 逛逛。" }, 
+            { "time": "17:00", "name": "日落遊船", "thai_name": "เจ้าพระยาปริ๊นเซส", "desc": "Buffet 晚餐 (17:00-18:30)", "icon": "fa-wine-glass", "color": "text-orange-500", "deep_desc": "在船上欣賞曼谷夕陽與夜景轉換的魔幻時刻。途經鄭王廟、大皇宮等在河岸邊的地標。食物是自助餐形式，亦有現場 Live Band 演奏。" },
+            { "time": "19:00", "name": "搬家換飯店", "desc": "前往通羅 (Jasmine 59)", "icon": "fa-suitcase", "color": "text-purple-500", "link": "https://maps.app.goo.gl/DmVbJdwrbkwQ7p8K6?g_st=ipc", "deep_desc": "遊船結束後，回 B2 拿行李，移動到通羅區 (Thong Lor)。這區晚上很熱鬧，Check-in 後若有體力可以去附近的酒吧小酌。" }
         ] },
         { "day": 4, "date": "12/26 (五)", "desc": "水上市場一日遊", "spots": [ 
             { "time": "08:00", "name": "包車出發", "desc": "飯店大廳集合 (準時!)", "icon": "fa-car", "color": "text-red-500", "highlight": true, "deep_desc": "今天的行程距離曼谷市區較遠 (約 1.5 - 2 小時車程)，請大家務必準時，以免塞車延誤火車進站的時間。" }, 
@@ -486,8 +507,8 @@
             const res = await fetch('https://api.exchangerate-api.com/v4/latest/THB');
             const data = await res.json();
             const rate = data.rates.TWD; 
-            document.getElementById('dash-rate').innerText = rate.toFixed(2);
-        } catch { document.getElementById('dash-rate').innerText = "0.92"; }
+            document.getElementById('home-rate-display').innerText = rate.toFixed(2);
+        } catch { document.getElementById('home-rate-display').innerText = "0.99"; }
     }
 
     function translateThai() {
@@ -526,6 +547,17 @@
                             <p class="text-xs text-gray-400 truncate">${s.desc}</p>
                         </div>
                         <i class="fas fa-chevron-right text-gray-200 text-xs"></i>
+                    </div>
+                    
+                    <div class="mt-3 pt-2 border-t border-gray-50 flex gap-2">
+                        ${s.link ? `
+                        <button onclick="event.stopPropagation(); window.open('${s.link}', '_blank')" class="card-action-btn bg-red-50 text-red-500">
+                            <i class="fas fa-map-marker-alt"></i> 地圖
+                        </button>` : ''}
+                        
+                        <button onclick="event.stopPropagation(); window.open('https://www.google.com/search?q=${encodeURIComponent('曼谷 ' + (s.keyword || s.name) + ' 攻略')}', '_blank')" class="card-action-btn bg-blue-50 text-blue-500">
+                            <i class="fab fa-google"></i> 攻略
+                        </button>
                     </div>
                 </div>
             </div>
@@ -660,16 +692,16 @@
 
     // --- UTILS ---
     function switchTab(id) { document.querySelectorAll('.section').forEach(e=>e.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.remove('active');}); document.querySelector(`.nav-btn[data-target="${id}"]`).classList.add('active'); }
-    function saveData() { localStorage.setItem('bkk_2025_v22', JSON.stringify(state)); } // Updated Key V22
+    function saveData() { localStorage.setItem('bkk_2025_v28_absolute', JSON.stringify(state)); } // Updated Key V28
     function loadData() { 
-        const d = localStorage.getItem('bkk_2025_v22');
+        const d = localStorage.getItem('bkk_2025_v28_absolute');
         if(d) {
             const loaded = JSON.parse(d);
             // MERGE strategy: Keep user transactions/checklist, but force-update itinerary from DEFAULT_ITINERARY to ensure new data is seen
             state = { ...loaded, itinerary: DEFAULT_ITINERARY };
         }
     }
-    function hardReset() { if(confirm("確定重置所有資料?")) { localStorage.removeItem('bkk_2025_v22'); location.reload(); } }
+    function hardReset() { if(confirm("確定重置所有資料?")) { localStorage.removeItem('bkk_2025_v28_absolute'); location.reload(); } }
 
     // Cloud & Account Logic
     async function autoSync() { const h=document.getElementById('header-status'); if(h) h.innerText='Syncing...'; try { const res = await fetch(GOOGLE_SCRIPT_URL + '?t=' + Date.now()); const d = await res.json(); if(d && Object.keys(d).length > 0) { state = {...state, ...d}; saveData(); renderAll(); } h.innerText='曼谷市'; } catch(e){ h.innerText='Offline'; } }
@@ -685,7 +717,11 @@
     function renderAccCats() { const cats=[{n:'餐飲',i:'fa-utensils'},{n:'交通',i:'fa-car'},{n:'購物',i:'fa-shopping-bag'},{n:'住宿',i:'fa-bed'},{n:'其他',i:'fa-ellipsis-h'}]; document.getElementById('cat-container').innerHTML = cats.map((c,i)=>`<button onclick="acc.cat='${c.n}';renderAccCats();" class="flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center border transition ${acc.cat===c.n?'bg-jp-text text-white border-jp-text shadow-lg':'bg-white text-gray-400 border-gray-100'}"><i class="fas ${c.i} mb-1"></i><span class="text-xs font-bold">${c.n}</span></button>`).join(''); }
     function renderPayers() { document.getElementById('payer-container').innerHTML = state.users.map(u=>`<button onclick="acc.payer='${u}';renderPayers();" class="px-4 py-2 rounded-xl text-xs font-bold border transition ${acc.payer===u?'bg-jp-accent text-white border-jp-accent':'bg-gray-50 text-gray-400 border-transparent'}">${u}</button>`).join(''); }
     function setCurrency(c) { acc.cur=c; document.getElementById('cur-twd').className=c==='TWD'?'px-3 h-full rounded-lg bg-white shadow-sm text-jp-text font-bold':'px-3 h-full rounded-lg text-gray-400 font-bold'; document.getElementById('cur-thb').className=c==='THB'?'px-3 h-full rounded-lg bg-white shadow-sm text-jp-text font-bold':'px-3 h-full rounded-lg text-gray-400 font-bold'; }
-    function updateFundDisplay() { document.getElementById('acc-fund-display').innerText = `฿ ${state.fundBalance}`; document.getElementById('home-fund-display').innerText = `฿ ${state.fundBalance}`; }
+    function updateFundDisplay() { 
+        const txt = `฿ ${state.fundBalance.toLocaleString()}`;
+        document.getElementById('acc-fund-display').innerText = txt; 
+        if(document.getElementById('home-fund-display')) document.getElementById('home-fund-display').innerText = txt; 
+    }
     function submitTx() { const amt=parseFloat(document.getElementById('amt-input').value); if(!amt) return alert("輸入金額"); if(acc.payer==='公費包') state.fundBalance-=amt; state.transactions.unshift({id:Date.now(), date:new Date().toLocaleString(), amt, note:document.getElementById('note-input').value, payer:acc.payer, cat:acc.cat, cur:acc.cur}); saveData(); updateFundDisplay(); renderHistory(); document.getElementById('amt-input').value=''; alert("已記錄"); }
     function renderHistory() { document.getElementById('tx-history').innerHTML = state.transactions.slice(0,10).map(t=>`<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center border border-white"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-400 font-bold">${t.payer[0]}</div><div><p class="text-sm font-bold text-jp-text">${t.note||t.cat}</p><p class="text-[10px] text-gray-400">${t.date.split(' ')[0]}</p></div></div><span class="font-bold text-jp-text">- ${t.amt}</span></div>`).join(''); }
     function editUsers() { const n=prompt("成員名單 (,分隔)", state.users.join(',')); if(n) { state.users=n.split(','); saveData(); renderPayers(); } }
